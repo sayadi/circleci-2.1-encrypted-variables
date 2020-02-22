@@ -1,0 +1,57 @@
+version: 2.1
+
+executors:
+  node-executor:
+    docker:
+      - image: circleci/node:8.10
+
+commands:
+  execute_script:
+    description: Runs a bash script located in the .circleci directory.
+    parameters:
+      title:
+        type: string
+      script:
+        type: string
+    steps:
+      - run:
+          name: << parameters.title >>
+          no_output_timeout: 20m
+          command: |
+            cd .circleci
+            chmod +x << parameters.script >>.sh
+            ./<< parameters.script >>.sh
+
+  set_env_vars:
+    description: Runs the set-env-vars script using the execute_script command.
+    steps:
+      - execute_script:
+          title: Set environment variables
+          script: set-env-vars
+
+jobs:
+  test-setup-job:
+    executor: node-executor
+
+    steps:
+      - checkout
+      - set_env_vars
+
+      - execute_script:
+          title: Run the echo-secrets script for testing
+          script: echo-secrets
+
+branch_filters: &branch_filters
+  filters:
+    branches:
+      only:
+        - dev
+        - staging
+        - prod
+
+workflows:
+  version: 2
+  test-setup-workflow:
+    jobs:
+      - test-setup-job:
+          <<: *branch_filters

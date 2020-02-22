@@ -1,0 +1,6 @@
+.circleci/env.original/*
+!.circleci/env.original/.gitkeep
+.circleci/env.decrypted/*
+!.circleci/env.decrypted/.gitkeep
+
+.idea/
